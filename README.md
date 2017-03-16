@@ -47,3 +47,9 @@ Add new profile:
   * Magnetic
   * Key (Keypress?)
   * Syn?
+* Try: /sensortag.html
+
+# Additional Documentation Found
+* http://www.ti.com/lit/ug/swru455a/swru455a.pdf
+
+
