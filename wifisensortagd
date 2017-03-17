@@ -1,0 +1,74 @@
+#!/usr/bin/perl
+#
+# New wifi-sensortagd
+# trying to make it better
+
+$debug = 1;
+if (!$debug) {
+  use Proc::Daemon;
+  $pid = Proc::Daemon::Init;
+  exit if $pid;
+}
+
+
+
+use Config::Simple;
+use Net::Ping;
+
+Config::Simple->import_from('./wifisensortagd.cfg', \%Config);
+
+my $mqttserver= $Config{"Mqttserver"};
+my $sensorline = $Config{"Sensors"};
+my $locationline=$Config{"Locations"};
+my $hostname = `hostname -f`;
+my $site = $Config{"Site"};
+chomp $hostname;
+my $readurl = "param_sensortag_poll.html";
+my $confurl = "param_sensortag_conf.html";
+
+if ($mqttserver) {
+  $mqttpub = "mosquitto_pub -h $mqttserver -p 1883 ";
+  system("$mqttpub -t /$site/$hostname/sensortagd/status -m started");
+}
+
+my $i=0;
+while ($sensorline->[$i]) {
+  $sensors{$sensorline->[$i]} = 1;
+  $location{$sensorline->[$i]} = $locationline->[$i];
+  $sensorcount++;
+  $i++;
+}
+
+$sleeptime = 60;
+
+while (!$found) {
+  foreach $addr (keys %sensors) {
+    # Check if sensortag is alive
+    #
+    $detected{$addr} = 0;
+    my $thisid = &GetDeviceId($addr);
+    if ($thisid) {
+      $detected{$addr} = 1;
+      # get characteristics
+      &readCharacteristics($addr);
+      $alive{$addr} = $thisid;
+      $location{$thisid} = $location{$addr};
+      $found = 1;
+    }
+  }
+}
+
+sub GetDeviceId {
+  my $this = shift;
+
+  my $p = Net::Ping->new();
+  exit if !$p->ping($this);
+  $p->close();
+
+  open(F,"wget -O - $this/$confurl |");
+  while (<F>) {
+    if (/mac.*>([0-9A-F:]+)</) {
+      return $1;
+    }
+  }
+}
