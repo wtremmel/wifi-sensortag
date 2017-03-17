@@ -39,7 +39,7 @@ while ($sensorline->[$i]) {
   $i++;
 }
 
-$sleeptime = 60;
+$sleeptime = 60*3;
 
 while (!$found) {
   foreach $addr (keys %sensors) {
@@ -50,12 +50,80 @@ while (!$found) {
     if ($thisid) {
       $detected{$addr} = 1;
       # get characteristics
-      &readCharacteristics($addr);
       $alive{$addr} = $thisid;
       $location{$thisid} = $location{$addr};
       $found = 1;
     }
   }
+}
+
+
+$count=1;
+# Main loop
+while (1) {
+  my $loopstart = time;
+  # check if undetected devices are still there
+  foreach $addr (keys %detected) {
+    if (!$detected{$addr}) {
+      my $thisid = &GetDeviceId($addr);
+      if ($thisid) {
+        $detected{$addr} = 1;
+        # get characteristics
+        $alive{$addr} = $thisid;
+        $location{$thisid} = $location{$addr};
+      }
+    }
+  }
+
+  foreach $addr (keys %alive) {
+    my $temp1, $temp2, $temp3, $temp;
+    my $hum;
+    my $pressure;
+    my $light;
+    next if !$detected{$addr};
+    if (! &isAlive($addr)) {
+      $detected{$addr} = 0;
+      next;
+    }
+    open(F,"wget -q -O - $addr/$readurl |");
+    while (<F>) {
+# <p id="tmp">0844 0B6C 16.53 22.84</p>
+# <p id="hum">63DC 61C4 39.01 23.01</p>
+# <p id="bar">5ED2C0 7E8500 23.8 999.48</p>
+# <p id="gyr">FF40 FF93 FFE7 -1.47 -0.83 -0.19</p>
+# <p id="acc">103F FFEF FF8A 1.02 -0.00 -0.03</p>
+# <p id="opt">0476 11.42</p>
+# <p id="mag">0128 0125 FF57 296 293 -169</p>
+# <p id="key">0</p>
+# <p id="syn">6272</p>
+
+      /tmp.*\s([0-9\.]+)</ && ($temp1 = $1);
+      /hum.*\s([0-9\.]+)\s+([0-9\.]+)</ && ($hum=$1, $temp2=$2);
+      /bar.*\s([0-9\.]+)\s+([0-9\.]+)</ && ($temp3=$1, $pressure=$2);
+      /opt.*\s([0-9\.]+)</ && ($light = $1);
+      
+    }
+
+    $temp = ($temp1 + $temp2 + $temp3) / 3.0;
+    print "Temp = $temp1 $temp2 $temp3 $temp\n" if $debug;
+    print "Hum  = $hum\n" if $debug;
+    print "Pres = $pressure\n" if $debug;
+    print "Light= $light\n" if $debug;
+
+    &sendToServer($count,$alive{$addr},$pressure,$hum,$temp,$light);
+    $count++;
+  }
+
+  my $howlong =  $sleeptime - (time - $loopstart);
+  sleep $howlong if ($howlong > 0);
+}
+
+sub isAlive {
+  my $this = shift;
+
+  my $p = Net::Ping->new();
+  return 0 if !$p->ping($this);
+  return 1;
 }
 
 sub GetDeviceId {
@@ -65,10 +133,49 @@ sub GetDeviceId {
   exit if !$p->ping($this);
   $p->close();
 
-  open(F,"wget -O - $this/$confurl |");
+  open(F,"wget -q -O - $this/$confurl |");
   while (<F>) {
     if (/mac.*>([0-9A-F:]+)</) {
+      close F;
       return $1;
+    }
+  }
+  close F;
+}
+
+sub sendToServer {
+  my $c = shift;
+  my $id = shift;
+  my $pres = shift;
+  my $hum  = shift;
+  my $temp = shift;
+  my $light = shift;
+
+  if ($light) {
+    if ($mqttpub) {
+      my $path = "/$site/" . $location{$id} . "/light";
+      system("$mqttpub -t $path -m $light");
+    }
+  }
+
+  if ($pres) {
+    if ($mqttpub) {
+      my $path = "/$site/" . $location{$id} . "/airpressure";
+      system("$mqttpub -t $path -m $pres");
+    }
+  }
+
+  if ($hum) {
+    if ($mqttpub) {
+      my $path = "/$site/" . $location{$id} . "/humidity";
+      system("$mqttpub -t $path -m $hum");
+    }
+  }
+
+  if ($temp) {
+    if ($mqttpub) {
+      my $path = "/$site/" . $location{$id} . "/temperature";
+      system("$mqttpub -t $path -m $temp");
     }
   }
 }
