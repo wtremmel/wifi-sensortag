@@ -25,10 +25,18 @@ Stuff I do with my TI Wifi Sensortag
 * `__SL_P_UAN`
 * `__SL_P_UFS`
 * `__SL_P_UCT`
-* `__SL_P_UCF`
-* `__SL_P_ULD`
+* `__SL_P_UCF` - Sensor enable map, bitmapped:
+  * 1 = Temperature
+  * 2 = Humidity
+  * 4 = Pressure
+  * 8 = Gyroskope
+  * 16 = Acceleration
+  * 32 = Optical
+  * 64 = Magnetic
+* `__SL_P_ULD` - LED, bitmapped, 1=red, 2=green, 4=buzzer
 * `__SL_P_UDV`
-* `__SL_P_URG`
+* `__SL_P_URG` - Write register. Syntax:
+  * ="adr,len,data"
 
 
 ## From profiles_config.html
@@ -44,10 +52,12 @@ Add new profile:
 * `__SL_P_P.D` - priority
 
 # URLs
+* /sensortag.html
 * /sys_up_time.txt
 * /date_time_info.txt
 * /param_product_version.txt
 * /param_sensortag_conf.html
+* /param_sensortag_reg.html - register info?
 * /param_sensortag_poll.html - gives sensor data
   * Temperature
   * Humidity
