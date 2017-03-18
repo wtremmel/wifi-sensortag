@@ -130,7 +130,7 @@ sub GetDeviceId {
   my $this = shift;
 
   my $p = Net::Ping->new();
-  exit if !$p->ping($this);
+  return if !$p->ping($this);
   $p->close();
 
   open(F,"wget -q -O - $this/$confurl |");
