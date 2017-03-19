@@ -53,6 +53,7 @@ while (!$found) {
       $alive{$addr} = $thisid;
       $location{$thisid} = $location{$addr};
       $found = 1;
+      &SetupDevice($addr,1+2+4+32);
     }
   }
 }
@@ -71,6 +72,7 @@ while (1) {
         # get characteristics
         $alive{$addr} = $thisid;
         $location{$thisid} = $location{$addr};
+        &SetupDevice($addr,1+2+4+32);
       }
     }
   }
@@ -141,6 +143,13 @@ sub GetDeviceId {
     }
   }
   close F;
+}
+
+sub SetupDevice {
+  my $device = shift;
+  my $services = shift;
+
+  system("wget --post-data=\"__SL_P_UCF=$services\" $device");
 }
 
 sub sendToServer {
