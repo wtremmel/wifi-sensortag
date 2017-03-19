@@ -22,7 +22,7 @@ Stuff I do with my TI Wifi Sensortag
 * `__SL_P_UIE=` - device type
 * `__SL_P_UIF=` - device ID
 * `__SL_P_UIG=` - device token
-* `__SL_P_UAN`
+* `__SL_P_UAN`  - device name (?)
 * `__SL_P_UFS`
 * `__SL_P_UCT`
 * `__SL_P_UCF` - Sensor enable map, bitmapped:
