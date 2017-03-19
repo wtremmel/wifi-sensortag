@@ -38,6 +38,8 @@ Stuff I do with my TI Wifi Sensortag
 * `__SL_P_URG` - Write register. Syntax:
   * ="adr,len,data"
 
+## Other Tokens
+* `__SL_P_ACT` - timeout in seconds (65535 = stay on forever)
 
 ## From profiles_config.html
 Add new profile:
@@ -56,6 +58,7 @@ Add new profile:
 * /sys_up_time.txt
 * /date_time_info.txt
 * /param_product_version.txt
+* /param_about.html
 * /param_sensortag_conf.html
 * /param_sensortag_reg.html - register info?
 * /param_sensortag_poll.html - gives sensor data
