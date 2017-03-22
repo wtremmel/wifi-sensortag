@@ -53,7 +53,7 @@ while (!$found) {
       $alive{$addr} = $thisid;
       $location{$thisid} = $location{$addr};
       $found = 1;
-      &SetupDevice($addr,1+2+4+32);
+      # &SetupDevice($addr,1+2+4+32);
     }
   }
 }
@@ -72,7 +72,7 @@ while (1) {
         # get characteristics
         $alive{$addr} = $thisid;
         $location{$thisid} = $location{$addr};
-        &SetupDevice($addr,1+2+4+32);
+        # &SetupDevice($addr,1+2+4+32);
       }
     }
   }

@@ -1,5 +1,6 @@
 # wifi-sensortag
 Stuff I do with my TI Wifi Sensortag
+Remark: I gave up for now. Seems I fried my Sensortag when trying to run it powered by a charger. 3V means 3V and not 3.3V.
 
 # User defined tokens
 * `__SL_P_UM0=` - send command to Sensortag. Possible values:
